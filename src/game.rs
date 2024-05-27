@@ -3,7 +3,7 @@ pub mod tests;
 
 use crate::chess_piece::{ChessPiece, Color, Piece};
 use crate::utils::get_fields::get_fields;
-use crate::utils::make_special_moves::{make_king_move, make_pawn_move};
+use crate::utils::make_special_moves::make_king_move;
 use crate::validate_move::bishop::validate_bishop_move;
 use uuid::Uuid;
 
@@ -35,10 +35,10 @@ impl Game {
         }
     }
     pub fn make_move<'a>(
-        &mut self,
+        &'a mut self,
         from: &'a str,
         to: &'a str,
-        promotion_piece: char,
+        promotion_piece: Option<Piece>,
     ) -> Result<(), &'a str> {
         if !Self::validate_move(self, from, to)? {
             return Err("Invalid move");
@@ -54,7 +54,15 @@ impl Game {
 
         // In case of pawn promotions or "en passant"
         if self.field[from.0][from.1].unwrap().piece == Piece::PAWN {
-            let _ = make_pawn_move(from, to, promotion_piece, &mut self.field);
+            if to.0 == 7 || to.0 == 0 {
+                match promotion_piece {
+                    None => return Err("No promotion piece specified for promotion"),
+                    Some(prom_piece) => self.field[to.0][to.1].unwrap().piece = prom_piece,
+                }
+            }
+            if from.1 != to.1 {
+                self.field[to.0][from.1] = None;
+            }
         }
 
         self.field[from.0][from.1] = None;

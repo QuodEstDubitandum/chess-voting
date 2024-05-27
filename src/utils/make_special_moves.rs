@@ -30,26 +30,6 @@ pub fn make_king_move(
     }
 }
 
-pub fn make_pawn_move<'a>(
-    from: (usize, usize),
-    to: (usize, usize),
-    promotion_piece: char,
-    field: &'a mut Vec<Vec<Option<ChessPiece>>>,
-) -> Result<(), &'a str> {
-    if to.0 == 7 || to.0 == 0 {
-        let promotion_mapping = PROMOTION_MAP.lock().unwrap();
-
-        field[to.0][to.1].unwrap().piece = *promotion_mapping
-            .get(&promotion_piece)
-            .ok_or("Invalid promotion piece")?;
-    }
-    if from.1 != to.1 {
-        field[to.0][from.1] = None;
-    }
-
-    Ok(())
-}
-
 static PROMOTION_MAP: Lazy<Mutex<HashMap<char, Piece>>> = Lazy::new(|| {
     let mut map = HashMap::new();
     map.insert('K', Piece::KING);
