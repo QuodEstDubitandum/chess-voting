@@ -1,10 +1,10 @@
+pub mod chess_piece;
+
 #[cfg(test)]
 pub mod tests;
 
-use crate::chess_piece::{ChessPiece, Color, Piece};
+use crate::game::chess_piece::{ChessPiece, Color, Piece};
 use crate::utils::get_fields::get_fields;
-use crate::utils::make_special_moves::make_king_move;
-use crate::validate_move::bishop::validate_bishop_move;
 use uuid::Uuid;
 
 pub struct Game {
@@ -26,8 +26,12 @@ impl Game {
     pub fn new() -> Game {
         create_new_game()
     }
-    pub fn validate_move<'a>(&self, from: &'a str, to: &'a str) -> Result<bool, &'a str> {
-        let (from, to) = get_fields(from, to)?;
+    pub fn validate_move<'a>(
+        &self,
+        algebraic_from: &'a str,
+        algebraic_to: &'a str,
+    ) -> Result<bool, &'a str> {
+        let (from, to) = get_fields(algebraic_from, algebraic_to)?;
 
         match self.field[from.0][from.1] {
             None => Ok(false),
@@ -36,39 +40,94 @@ impl Game {
     }
     pub fn make_move<'a>(
         &'a mut self,
-        from: &'a str,
-        to: &'a str,
+        algebraic_from: &'a str,
+        algebraic_to: &'a str,
         promotion_piece: Option<Piece>,
     ) -> Result<(), &'a str> {
-        if !Self::validate_move(self, from, to)? {
+        if !Self::validate_move(self, algebraic_from, algebraic_to)? {
             return Err("Invalid move");
         }
 
-        let (from, to) = get_fields(from, to)?;
-        self.field[to.0][to.1] = self.field[from.0][from.1];
+        let (from, to) = get_fields(algebraic_from, algebraic_to)?;
 
-        // In case of castles
-        if self.field[from.0][from.1].unwrap().piece == Piece::KING {
-            let _ = make_king_move(from, to, &mut self.field);
+        // Add x in case we capture
+        let move_with_capture = self.field[to.0][to.1].is_some();
+        if move_with_capture {
+            self.previous_move = "x".to_string();
+        } else {
+            self.previous_move = "".to_string();
         }
 
-        // In case of pawn promotions or "en passant"
-        if self.field[from.0][from.1].unwrap().piece == Piece::PAWN {
-            if to.0 == 7 || to.0 == 0 {
-                match promotion_piece {
-                    None => return Err("No promotion piece specified for promotion"),
-                    Some(prom_piece) => self.field[to.0][to.1].unwrap().piece = prom_piece,
-                }
+        // Target square
+        self.previous_move.push_str(algebraic_to);
+
+        self.field[to.0][to.1] = self.field[from.0][from.1];
+
+        match self.field[from.0][from.1].unwrap().piece {
+            // in case of castles
+            Piece::KING => {
+                self.make_king_move(from, to);
             }
-            if from.1 != to.1 {
-                self.field[to.0][from.1] = None;
-            }
+            // In case of pawn promotions or "en passant"
+            Piece::PAWN => self.make_pawn_move(from, to, promotion_piece)?,
+            Piece::QUEEN => self.previous_move.insert(0, 'Q'),
+            Piece::ROOK => self.previous_move.insert(0, 'R'),
+            Piece::BISHOP => self.previous_move.insert(0, 'B'),
+            Piece::KNIGHT => self.previous_move.insert(0, 'N'),
         }
 
         self.field[from.0][from.1] = None;
         match self.next_to_move {
             Color::BLACK => self.next_to_move = Color::WHITE,
             Color::WHITE => self.next_to_move = Color::BLACK,
+        }
+
+        Ok(())
+    }
+    fn make_king_move(&mut self, from: (usize, usize), to: (usize, usize)) {
+        match (from, to) {
+            ((0, 4), (0, 6)) => {
+                self.field[0][5] = self.field[0][7];
+                self.field[0][7] = None;
+                self.previous_move = "0-0".to_string();
+            }
+            ((0, 4), (0, 2)) => {
+                self.field[0][3] = self.field[0][0];
+                self.field[0][0] = None;
+                self.previous_move = "0-0-0".to_string();
+            }
+            ((7, 4), (7, 6)) => {
+                self.field[7][5] = self.field[7][7];
+                self.field[7][7] = None;
+                self.previous_move = "0-0".to_string();
+            }
+            ((7, 4), (7, 2)) => {
+                self.field[7][3] = self.field[7][0];
+                self.field[7][0] = None;
+                self.previous_move = "0-0-0".to_string();
+            }
+            _ => (),
+        }
+    }
+    fn make_pawn_move<'a>(
+        &mut self,
+        from: (usize, usize),
+        to: (usize, usize),
+        promotion_piece: Option<Piece>,
+    ) -> Result<(), &'a str> {
+        if to.0 == 7 || to.0 == 0 {
+            match promotion_piece {
+                None => return Err("No promotion piece specified for promotion"),
+                Some(prom_piece) => {
+                    self.field[to.0][to.1].unwrap().piece = prom_piece;
+                    // TODO
+                    self.previous_move.push_str("=");
+                }
+            }
+        }
+        if from.1 != to.1 && self.field[to.0][to.1].is_none() {
+            self.field[to.0][from.1] = None;
+            self.previous_move.insert(0, 'x');
         }
 
         Ok(())

@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test_special_moves {
     use crate::{
-        chess_piece::{Color, Piece},
+        game::chess_piece::{Color, Piece},
         game::{CastlingRights, ChessPiece},
     };
 

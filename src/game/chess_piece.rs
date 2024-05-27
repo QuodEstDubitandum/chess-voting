@@ -4,7 +4,7 @@ pub struct ChessPiece {
     pub color: Color,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Hash, Eq)]
 pub enum Piece {
     KING,
     QUEEN,
