@@ -1,4 +1,5 @@
 pub mod chess_piece;
+pub mod validation;
 
 #[cfg(test)]
 pub mod tests;
@@ -6,6 +7,9 @@ pub mod tests;
 use crate::game::chess_piece::{ChessPiece, Color, Piece};
 use crate::utils::get_fields::get_fields;
 use uuid::Uuid;
+
+use self::validation::bishop::validate_bishop_move;
+use self::validation::rook::validate_rook_move;
 
 pub struct Game {
     pub id: Uuid,
@@ -30,12 +34,16 @@ impl Game {
         &self,
         algebraic_from: &'a str,
         algebraic_to: &'a str,
-    ) -> Result<bool, &'a str> {
+    ) -> Result<(), &'a str> {
         let (from, to) = get_fields(algebraic_from, algebraic_to)?;
 
         match self.field[from.0][from.1] {
-            None => Ok(false),
-            _ => Ok(true),
+            None => Err("There is no piece on that square"),
+            Some(x) => match x.piece {
+                Piece::BISHOP => validate_bishop_move(from, to, &self),
+                Piece::ROOK => validate_rook_move(from, to, &self),
+                _ => Ok(()),
+            },
         }
     }
     pub fn make_move<'a>(
@@ -44,9 +52,7 @@ impl Game {
         algebraic_to: &'a str,
         promotion_piece: Option<Piece>,
     ) -> Result<(), &'a str> {
-        if !Self::validate_move(self, algebraic_from, algebraic_to)? {
-            return Err("Invalid move");
-        }
+        Self::validate_move(self, algebraic_from, algebraic_to)?;
 
         let (from, to) = get_fields(algebraic_from, algebraic_to)?;
 
@@ -61,21 +67,19 @@ impl Game {
         // Target square
         self.previous_move.push_str(algebraic_to);
 
+        // Move to new square
         self.field[to.0][to.1] = self.field[from.0][from.1];
 
         match self.field[from.0][from.1].unwrap().piece {
-            // in case of castles
-            Piece::KING => {
-                self.make_king_move(from, to);
-            }
-            // In case of pawn promotions or "en passant"
+            Piece::KING => self.make_king_move(from, to),
             Piece::PAWN => self.make_pawn_move(from, to, promotion_piece)?,
             Piece::QUEEN => self.previous_move.insert(0, 'Q'),
-            Piece::ROOK => self.previous_move.insert(0, 'R'),
+            Piece::ROOK => self.make_rook_move(from),
             Piece::BISHOP => self.previous_move.insert(0, 'B'),
             Piece::KNIGHT => self.previous_move.insert(0, 'N'),
         }
 
+        // Move away from old square
         self.field[from.0][from.1] = None;
         match self.next_to_move {
             Color::BLACK => self.next_to_move = Color::WHITE,
@@ -84,7 +88,29 @@ impl Game {
 
         Ok(())
     }
+    fn make_rook_move(&mut self, from: (usize, usize)) {
+        self.previous_move.insert(0, 'R');
+
+        // Take away castling rights if necessary
+        if self.next_to_move == Color::BLACK {
+            if from.0 == 0 && from.1 == 0 {
+                self.can_castle.black_can_long_castle = false;
+            }
+            if from.0 == 0 && from.1 == 7 {
+                self.can_castle.black_can_short_castle = false;
+            }
+        }
+        if self.next_to_move == Color::WHITE {
+            if from.0 == 7 && from.1 == 0 {
+                self.can_castle.white_can_long_castle = false;
+            }
+            if from.0 == 7 && from.1 == 7 {
+                self.can_castle.white_can_short_castle = false;
+            }
+        }
+    }
     fn make_king_move(&mut self, from: (usize, usize), to: (usize, usize)) {
+        // Check if castling move
         match (from, to) {
             ((0, 4), (0, 6)) => {
                 self.field[0][5] = self.field[0][7];
@@ -108,6 +134,15 @@ impl Game {
             }
             _ => (),
         }
+
+        // Take away castling rights
+        if self.next_to_move == Color::BLACK {
+            self.can_castle.black_can_long_castle = false;
+            self.can_castle.black_can_short_castle = false;
+        } else {
+            self.can_castle.white_can_long_castle = false;
+            self.can_castle.white_can_short_castle = false;
+        }
     }
     fn make_pawn_move<'a>(
         &mut self,
@@ -115,6 +150,7 @@ impl Game {
         to: (usize, usize),
         promotion_piece: Option<Piece>,
     ) -> Result<(), &'a str> {
+        // Check if promotion move
         if to.0 == 7 || to.0 == 0 {
             match promotion_piece {
                 None => return Err("No promotion piece specified for promotion"),
@@ -125,6 +161,8 @@ impl Game {
                 }
             }
         }
+
+        // Check if en passant
         if from.1 != to.1 && self.field[to.0][to.1].is_none() {
             self.field[to.0][from.1] = None;
             self.previous_move.insert(0, 'x');
