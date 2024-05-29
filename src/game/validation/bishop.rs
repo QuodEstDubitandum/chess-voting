@@ -34,3 +34,83 @@ pub fn validate_bishop_move<'a>(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod test_bishop {
+    use crate::{
+        game::chess_piece::{Color, Piece},
+        game::ChessPiece,
+        game::Game,
+    };
+
+    #[test]
+    fn test_bishop_move() {
+        let mut game = Game::new();
+        game.field[6][4] = None;
+        let val = game.make_move("f1", "b5", None);
+        if let Err(e) = val {
+            panic!("Expected bishop move to be performed, got {:?}", e);
+        }
+
+        assert_eq!(game.field[7][5], None);
+        assert_eq!(
+            game.field[3][1],
+            Some({
+                ChessPiece {
+                    piece: Piece::BISHOP,
+                    color: Color::WHITE,
+                }
+            })
+        );
+        assert_eq!(game.previous_move, "Bb5");
+    }
+
+    #[test]
+    fn test_bishop_move_with_capture() {
+        let mut game = Game::new();
+        game.field[6][4] = None;
+        game.field[3][1] = Some(ChessPiece {
+            piece: Piece::PAWN,
+            color: Color::BLACK,
+        });
+        let val = game.make_move("f1", "b5", None);
+        if let Err(e) = val {
+            panic!("Expected bishop move to be performed, got {:?}", e);
+        }
+
+        assert_eq!(game.field[7][5], None);
+        assert_eq!(
+            game.field[3][1],
+            Some({
+                ChessPiece {
+                    piece: Piece::BISHOP,
+                    color: Color::WHITE,
+                }
+            })
+        );
+        assert_eq!(game.previous_move, "Bxb5");
+    }
+
+    #[test]
+    fn test_bishop_move_with_wrong_capture() {
+        let mut game = Game::new();
+        game.field[6][4] = None;
+        game.field[3][1] = Some(ChessPiece {
+            piece: Piece::PAWN,
+            color: Color::WHITE,
+        });
+        let val = game.make_move("f1", "b5", None);
+        if val.is_ok() {
+            panic!("Expected bishop move to fail due to your own piece being captured");
+        }
+    }
+
+    #[test]
+    fn test_bishop_move_with_piece_in_the_way() {
+        let mut game = Game::new();
+        let val = game.make_move("f1", "b5", None);
+        if val.is_ok() {
+            panic!("Expected bishop move to fail due to a piece being in the way");
+        }
+    }
+}

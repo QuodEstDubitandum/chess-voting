@@ -9,6 +9,8 @@ use crate::utils::get_fields::get_fields;
 use uuid::Uuid;
 
 use self::validation::bishop::validate_bishop_move;
+use self::validation::knight::validate_knight_move;
+use self::validation::queen::validate_queen_move;
 use self::validation::rook::validate_rook_move;
 
 pub struct Game {
@@ -42,6 +44,8 @@ impl Game {
             Some(x) => match x.piece {
                 Piece::BISHOP => validate_bishop_move(from, to, &self),
                 Piece::ROOK => validate_rook_move(from, to, &self),
+                Piece::QUEEN => validate_queen_move(from, to, &self),
+                Piece::KNIGHT => validate_knight_move(from, to, &self),
                 _ => Ok(()),
             },
         }
