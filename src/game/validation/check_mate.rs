@@ -195,7 +195,3 @@ fn capturable_by_linear_move(
         }
     }
 }
-
-pub fn is_mate(color: Color, game: Game) -> bool {
-    false
-}

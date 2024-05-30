@@ -74,7 +74,7 @@ mod test_queen {
     fn test_queen_move() {
         let mut game = Game::new();
         game.field[6][4] = None;
-        let val = game.make_move("d1", "g4", None);
+        let val = game.validate_and_make_move("d1", "g4", None);
         if let Err(e) = val {
             panic!("Expected queen move to be performed, got {:?}", e);
         }
@@ -96,7 +96,7 @@ mod test_queen {
     fn test_queen_move_with_capture() {
         let mut game = Game::new();
         game.field[6][3] = None;
-        let val = game.make_move("d1", "d7", None);
+        let val = game.validate_and_make_move("d1", "d7", None);
         if let Err(e) = val {
             panic!("Expected queen move to be performed, got {:?}", e);
         }
@@ -117,7 +117,7 @@ mod test_queen {
     #[test]
     fn test_queen_move_with_wrong_capture() {
         let mut game = Game::new();
-        let val = game.make_move("d1", "d2", None);
+        let val = game.validate_and_make_move("d1", "d2", None);
         if val.is_ok() {
             panic!("Expected queen move to fail due to your own piece being captured");
         }
@@ -127,7 +127,7 @@ mod test_queen {
     fn test_queen_move_with_piece_in_the_way() {
         let mut game = Game::new();
         game.field[6][3] = None;
-        let val = game.make_move("d1", "d8", None);
+        let val = game.validate_and_make_move("d1", "d8", None);
         if val.is_ok() {
             panic!("Expected queen move to fail due to a piece being in the way");
         }

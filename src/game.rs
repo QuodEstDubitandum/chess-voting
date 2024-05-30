@@ -43,6 +43,17 @@ impl Game {
     pub fn new() -> Game {
         create_new_game()
     }
+    pub fn validate_and_make_move(
+        &mut self,
+        algebraic_from: &str,
+        algebraic_to: &str,
+        promotion_piece: Option<Piece>,
+    ) -> Result<(), &'static str> {
+        self.validate_move(algebraic_from, algebraic_to, promotion_piece)?;
+        self.make_move(algebraic_from, algebraic_to, promotion_piece);
+
+        Ok(())
+    }
     pub fn validate_move(
         &self,
         algebraic_from: &str,
@@ -66,7 +77,7 @@ impl Game {
 
         // check if the move would put your king in check
         let mut game_clone = self.clone();
-        game_clone.make_move(algebraic_from, algebraic_to, promotion_piece)?;
+        game_clone.make_move(algebraic_from, algebraic_to, promotion_piece);
         match game_clone.next_to_move {
             Color::WHITE => {
                 let checking_pieces = can_be_captured_by(
@@ -97,10 +108,9 @@ impl Game {
         algebraic_from: &str,
         algebraic_to: &str,
         promotion_piece: Option<Piece>,
-    ) -> Result<(), &'static str> {
-        Self::validate_move(self, algebraic_from, algebraic_to, promotion_piece)?;
-
-        let (from, to) = get_squares_from_notation(algebraic_from, algebraic_to)?;
+    ) {
+        // we can unwrap here since we perform this function in the validation function as well
+        let (from, to) = get_squares_from_notation(algebraic_from, algebraic_to).unwrap();
         self.can_en_passant = false;
 
         // Add x in case we capture
@@ -116,7 +126,7 @@ impl Game {
 
         match self.field[from.0][from.1].unwrap().piece {
             Piece::KING => self.make_king_move(from, to),
-            Piece::PAWN => self.make_pawn_move(from, to, promotion_piece)?,
+            Piece::PAWN => self.make_pawn_move(from, to, promotion_piece),
             Piece::QUEEN => self.previous_move.insert(0, 'Q'),
             Piece::ROOK => self.make_rook_move(from),
             Piece::BISHOP => self.previous_move.insert(0, 'B'),
@@ -130,8 +140,6 @@ impl Game {
             Color::BLACK => self.next_to_move = Color::WHITE,
             Color::WHITE => self.next_to_move = Color::BLACK,
         }
-
-        Ok(())
     }
     fn make_rook_move(&mut self, from: (usize, usize)) {
         self.previous_move.insert(0, 'R');
@@ -200,17 +208,12 @@ impl Game {
         from: (usize, usize),
         to: (usize, usize),
         promotion_piece: Option<Piece>,
-    ) -> Result<(), &'static str> {
+    ) {
         // Check if promotion move
         if to.0 == 7 || to.0 == 0 {
-            match promotion_piece {
-                None => return Err(PROMOTION_ERROR),
-                Some(prom_piece) => {
-                    self.field[to.0][to.1].unwrap().piece = prom_piece;
-                    // TODO
-                    self.previous_move.push_str("=");
-                }
-            }
+            self.field[to.0][to.1].unwrap().piece = promotion_piece.unwrap();
+            // TODO
+            self.previous_move.push_str("=");
         }
 
         // Check if en passant
@@ -223,8 +226,6 @@ impl Game {
         if (from.0 as i32 - to.0 as i32).abs() == 2 {
             self.can_en_passant = true;
         }
-
-        Ok(())
     }
 }
 

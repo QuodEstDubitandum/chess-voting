@@ -85,7 +85,7 @@ mod test_pawn {
     fn test_pawn_move() {
         let mut game = Game::new();
         let _ = game
-            .make_move("b2", "b4", None)
+            .validate_and_make_move("b2", "b4", None)
             .expect("Expected pawn move to be performed");
 
         assert_eq!(game.field[6][1], None);
@@ -105,19 +105,19 @@ mod test_pawn {
     fn test_pawn_move_with_capture() {
         let mut game = Game::new();
         let _ = game
-            .make_move("d2", "d4", None)
+            .validate_and_make_move("d2", "d4", None)
             .expect("Expected pawn move to be performed");
         let _ = game
-            .make_move("d7", "d5", None)
+            .validate_and_make_move("d7", "d5", None)
             .expect("Expected pawn move to be performed");
         let _ = game
-            .make_move("c2", "c4", None)
+            .validate_and_make_move("c2", "c4", None)
             .expect("Expected pawn move to be performed");
         let _ = game
-            .make_move("e7", "e6", None)
+            .validate_and_make_move("e7", "e6", None)
             .expect("Expected pawn move to be performed");
         let _ = game
-            .make_move("c4", "d5", None)
+            .validate_and_make_move("c4", "d5", None)
             .expect("Expected pawn move to be performed");
 
         assert_eq!(game.field[6][2], None);
@@ -140,23 +140,23 @@ mod test_pawn {
     fn test_pawn_move_with_en_passant() {
         let mut game = Game::new();
         let _ = game
-            .make_move("d2", "d4", None)
+            .validate_and_make_move("d2", "d4", None)
             .expect("Expected pawn move to be performed");
         assert_eq!(game.can_en_passant, true);
         let _ = game
-            .make_move("h7", "h6", None)
+            .validate_and_make_move("h7", "h6", None)
             .expect("Expected pawn move to be performed");
         assert_eq!(game.can_en_passant, false);
         let _ = game
-            .make_move("d4", "d5", None)
+            .validate_and_make_move("d4", "d5", None)
             .expect("Expected pawn move to be performed");
         assert_eq!(game.can_en_passant, false);
         let _ = game
-            .make_move("e7", "e5", None)
+            .validate_and_make_move("e7", "e5", None)
             .expect("Expected pawn move to be performed");
         assert_eq!(game.can_en_passant, true);
         let _ = game
-            .make_move("d5", "e6", None)
+            .validate_and_make_move("d5", "e6", None)
             .expect("Expected pawn move to be performed");
         assert_eq!(game.can_en_passant, false);
 
@@ -179,22 +179,22 @@ mod test_pawn {
     fn test_pawn_move_with_incorrect_en_passant() {
         let mut game = Game::new();
         let _ = game
-            .make_move("d2", "d4", None)
+            .validate_and_make_move("d2", "d4", None)
             .expect("Expected pawn move to be performed");
         assert_eq!(game.can_en_passant, true);
         let _ = game
-            .make_move("h7", "h6", None)
+            .validate_and_make_move("h7", "h6", None)
             .expect("Expected pawn move to be performed");
         assert_eq!(game.can_en_passant, false);
         let _ = game
-            .make_move("d4", "d5", None)
+            .validate_and_make_move("d4", "d5", None)
             .expect("Expected pawn move to be performed");
         assert_eq!(game.can_en_passant, false);
         let _ = game
-            .make_move("g7", "g5", None)
+            .validate_and_make_move("g7", "g5", None)
             .expect("Expected pawn move to be performed");
         assert_eq!(game.can_en_passant, true);
-        let val = game.make_move("d5", "e6", None);
+        let val = game.validate_and_make_move("d5", "e6", None);
         if val.is_ok() {
             panic!("Expected pawn move to fail due to having en passant rights but no pawn present on capture square");
         }
@@ -207,7 +207,7 @@ mod test_pawn {
             piece: Piece::PAWN,
             color: Color::WHITE,
         });
-        let val = game.make_move("b2", "c3", None);
+        let val = game.validate_and_make_move("b2", "c3", None);
         if val.is_ok() {
             panic!("Expected pawn move to fail due to your own piece being captured");
         }
@@ -220,7 +220,7 @@ mod test_pawn {
             piece: Piece::QUEEN,
             color: Color::BLACK,
         });
-        let val = game.make_move("h2", "h4", None);
+        let val = game.validate_and_make_move("h2", "h4", None);
         if val.is_ok() {
             panic!("Expected pawn move to fail due to a piece being in the way");
         }
@@ -230,12 +230,12 @@ mod test_pawn {
     fn test_pawn_invalid_two_square_move() {
         let mut game = Game::new();
         let _ = game
-            .make_move("h2", "h3", None)
+            .validate_and_make_move("h2", "h3", None)
             .expect("Expected pawn move to be performed");
         let _ = game
-            .make_move("d7", "d5", None)
+            .validate_and_make_move("d7", "d5", None)
             .expect("Expected pawn move to be performed");
-        let val = game.make_move("h3", "h5", None);
+        let val = game.validate_and_make_move("h3", "h5", None);
         if val.is_ok() {
             panic!("Expected pawn move to fail due to the pawn already being moved from the starting square");
         }
