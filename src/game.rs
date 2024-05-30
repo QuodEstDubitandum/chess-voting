@@ -13,20 +13,29 @@ use self::validation::pawn::validate_pawn_move;
 use self::validation::queen::validate_queen_move;
 use self::validation::rook::validate_rook_move;
 
+#[derive(Clone)]
 pub struct Game {
     pub id: Uuid,
     pub next_to_move: Color,
     pub previous_move: String,
     pub can_castle: CastlingRights,
     pub can_en_passant: bool,
+    pub king_position: KingPosition,
     pub field: Vec<Vec<Option<ChessPiece>>>,
 }
 
+#[derive(Clone)]
 pub struct CastlingRights {
     pub white_can_short_castle: bool,
     pub white_can_long_castle: bool,
     pub black_can_short_castle: bool,
     pub black_can_long_castle: bool,
+}
+
+#[derive(Clone)]
+pub struct KingPosition {
+    pub white_king_position: (usize, usize),
+    pub black_king_position: (usize, usize),
 }
 
 impl Game {
@@ -149,6 +158,12 @@ impl Game {
             self.can_castle.white_can_long_castle = false;
             self.can_castle.white_can_short_castle = false;
         }
+
+        // Change king position
+        match self.next_to_move {
+            Color::BLACK => self.king_position.black_king_position = to,
+            Color::WHITE => self.king_position.white_king_position = to,
+        }
     }
     fn make_pawn_move(
         &mut self,
@@ -195,6 +210,12 @@ fn create_new_game() -> Game {
             black_can_long_castle: true,
         },
         can_en_passant: false,
+        king_position: {
+            KingPosition {
+                white_king_position: (7, 4),
+                black_king_position: (0, 4),
+            }
+        },
         field: vec![
             vec![
                 Some(ChessPiece {
