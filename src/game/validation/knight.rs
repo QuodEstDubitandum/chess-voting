@@ -1,23 +1,26 @@
-use crate::game::Game;
+use crate::{
+    game::Game,
+    utils::error::{CAPTURE_OWN_PIECE_ERROR, GENERAL_ERROR},
+};
 
-pub fn validate_knight_move<'a>(
+pub fn validate_knight_move(
     from: (usize, usize),
     to: (usize, usize),
     game: &Game,
-) -> Result<(), &'a str> {
+) -> Result<(), &'static str> {
     let row_diff = (from.0 as i32 - to.0 as i32).abs();
     let col_diff = (from.1 as i32 - to.1 as i32).abs();
 
     // not even move
     match (row_diff, col_diff) {
         (1, 2) | (2, 1) => (),
-        _ => return Err("Invalid knight move"),
+        _ => return Err(GENERAL_ERROR),
     }
 
     // if you capture a piece, is it of the opposite color?
     if let Some(piece) = game.field[to.0][to.1] {
         if piece.color == game.next_to_move {
-            return Err("You cannot capture your own piece");
+            return Err(CAPTURE_OWN_PIECE_ERROR);
         }
     }
 
