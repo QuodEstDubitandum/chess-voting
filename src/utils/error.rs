@@ -8,3 +8,4 @@ pub const NO_PIECE_SELECTED_ERROR: &'static str = "You have not selected any pie
 pub const INVALID_FROM_FIELD: &'static str = "The from field in your requests body is incorrect";
 pub const INVALID_TO_FIELD: &'static str = "The to field in your requests body is incorrect";
 pub const INVALID_CASTLE_ERROR: &'static str = "That castle move is invalid";
+pub const CHECK_ERROR: &'static str = "Your king is in check";

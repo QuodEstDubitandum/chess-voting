@@ -3,10 +3,11 @@ pub mod validation;
 
 use crate::game::chess_piece::{ChessPiece, Color, Piece};
 use crate::utils::convert_notation::get_squares_from_notation;
-use crate::utils::error::{NO_PIECE_SELECTED_ERROR, PROMOTION_ERROR};
+use crate::utils::error::{CHECK_ERROR, NO_PIECE_SELECTED_ERROR, PROMOTION_ERROR};
 use uuid::Uuid;
 
 use self::validation::bishop::validate_bishop_move;
+use self::validation::check_mate::can_be_captured_by;
 use self::validation::king::validate_king_move;
 use self::validation::knight::validate_knight_move;
 use self::validation::pawn::validate_pawn_move;
@@ -50,17 +51,46 @@ impl Game {
     ) -> Result<(), &'static str> {
         let (from, to) = get_squares_from_notation(algebraic_from, algebraic_to)?;
 
+        // check if the move is valid
         match self.field[from.0][from.1] {
-            None => Err(NO_PIECE_SELECTED_ERROR),
+            None => return Err(NO_PIECE_SELECTED_ERROR),
             Some(x) => match x.piece {
-                Piece::BISHOP => validate_bishop_move(from, to, &self),
-                Piece::ROOK => validate_rook_move(from, to, &self),
-                Piece::QUEEN => validate_queen_move(from, to, &self),
-                Piece::KNIGHT => validate_knight_move(from, to, &self),
-                Piece::PAWN => validate_pawn_move(from, to, promotion_piece, &self),
-                Piece::KING => validate_king_move(from, to, &self),
+                Piece::BISHOP => validate_bishop_move(from, to, &self)?,
+                Piece::ROOK => validate_rook_move(from, to, &self)?,
+                Piece::QUEEN => validate_queen_move(from, to, &self)?,
+                Piece::KNIGHT => validate_knight_move(from, to, &self)?,
+                Piece::PAWN => validate_pawn_move(from, to, promotion_piece, &self)?,
+                Piece::KING => validate_king_move(from, to, &self)?,
             },
+        };
+
+        // check if the move would put your king in check
+        let mut game_clone = self.clone();
+        game_clone.make_move(algebraic_from, algebraic_to, promotion_piece)?;
+        match game_clone.next_to_move {
+            Color::WHITE => {
+                let checking_pieces = can_be_captured_by(
+                    Color::BLACK,
+                    game_clone.king_position.white_king_position,
+                    game_clone,
+                );
+                if checking_pieces.len() != 0 {
+                    return Err(CHECK_ERROR);
+                }
+            }
+            Color::BLACK => {
+                let checking_pieces = can_be_captured_by(
+                    Color::WHITE,
+                    game_clone.king_position.black_king_position,
+                    game_clone,
+                );
+                if checking_pieces.len() != 0 {
+                    return Err(CHECK_ERROR);
+                }
+            }
         }
+
+        Ok(())
     }
     pub fn make_move(
         &mut self,

@@ -9,19 +9,16 @@ pub struct CapturePiece {
     pub piece: Piece,
 }
 
-pub fn can_be_captured_by(color: Color, square: (usize, usize), game: Game) -> Vec<CapturePiece> {
+pub fn can_be_captured_by(
+    enemy_color: Color,
+    square: (usize, usize),
+    game: Game,
+) -> Vec<CapturePiece> {
     let mut capturable_by = vec![];
-
-    let enemy_color: Color;
-    match color {
-        Color::BLACK => enemy_color = Color::WHITE,
-        Color::WHITE => enemy_color = Color::BLACK,
-    }
 
     capturable_by_knight(enemy_color, square, &game, &mut capturable_by);
     capturable_by_diagonal_move(enemy_color, square, &game, &mut capturable_by);
-    capturable_by_horizontal_move(color, enemy_color, square, &game, &mut capturable_by);
-    capturable_by_vertical_move(color, enemy_color, square, &game, &mut capturable_by);
+    capturable_by_linear_move(enemy_color, square, &game, &mut capturable_by);
 
     capturable_by
 }
@@ -141,22 +138,62 @@ fn capturable_by_diagonal_move(
     }
 }
 
-fn capturable_by_horizontal_move(
-    color: Color,
+fn capturable_by_linear_move(
     enemy_color: Color,
     square: (usize, usize),
     game: &Game,
     capturable_by: &mut Vec<CapturePiece>,
 ) {
-}
+    let row = square.0 as i32;
+    let col = square.1 as i32;
 
-fn capturable_by_vertical_move(
-    color: Color,
-    enemy_color: Color,
-    square: (usize, usize),
-    game: &Game,
-    capturable_by: &mut Vec<CapturePiece>,
-) {
+    let directions = vec![(1, 0), (-1, 0), (0, 1), (0, -1)];
+    for dir in directions {
+        'inner: for i in 1..8 {
+            if row + i * dir.0 >= 0
+                && row + i * dir.0 <= 7
+                && col + i * dir.1 >= 0
+                && col + i * dir.1 <= 7
+                && game.field[square.0 + (i * dir.0) as usize][square.1 + (i * dir.1) as usize]
+                    .is_some()
+            {
+                let piece = game.field[square.0 + (i * dir.0) as usize]
+                    [square.1 + (i * dir.1) as usize]
+                    .unwrap();
+                if piece.color != enemy_color {
+                    break 'inner;
+                }
+
+                match piece.piece {
+                    Piece::QUEEN => {
+                        capturable_by.push(CapturePiece {
+                            row: row as usize,
+                            col: col as usize,
+                            piece: Piece::QUEEN,
+                        });
+                    }
+                    Piece::ROOK => {
+                        capturable_by.push(CapturePiece {
+                            row: row as usize,
+                            col: col as usize,
+                            piece: Piece::ROOK,
+                        });
+                    }
+                    Piece::KING => {
+                        if i == 1 {
+                            capturable_by.push(CapturePiece {
+                                row: row as usize,
+                                col: col as usize,
+                                piece: Piece::KING,
+                            });
+                        }
+                    }
+                    _ => (),
+                }
+                break 'inner;
+            }
+        }
+    }
 }
 
 pub fn is_mate(color: Color, game: Game) -> bool {
