@@ -1,2 +1,6 @@
 pub mod convert_notation;
 pub mod error;
+
+pub fn is_in_bounds(row: i32, col: i32) -> bool {
+    row >= 0 && row <= 7 && col >= 0 && col <= 7
+}

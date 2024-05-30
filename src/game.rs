@@ -3,7 +3,7 @@ pub mod validation;
 
 use crate::game::chess_piece::{ChessPiece, Color, Piece};
 use crate::utils::convert_notation::get_squares_from_notation;
-use crate::utils::error::{CHECK_ERROR, NO_PIECE_SELECTED_ERROR, PROMOTION_ERROR};
+use crate::utils::error::{CHECK_ERROR, NO_PIECE_SELECTED_ERROR};
 use uuid::Uuid;
 
 use self::validation::bishop::validate_bishop_move;
@@ -14,7 +14,7 @@ use self::validation::pawn::validate_pawn_move;
 use self::validation::queen::validate_queen_move;
 use self::validation::rook::validate_rook_move;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Game {
     pub id: Uuid,
     pub next_to_move: Color,
@@ -25,7 +25,7 @@ pub struct Game {
     pub field: Vec<Vec<Option<ChessPiece>>>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CastlingRights {
     pub white_can_short_castle: bool,
     pub white_can_long_castle: bool,
@@ -33,7 +33,7 @@ pub struct CastlingRights {
     pub black_can_long_castle: bool,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct KingPosition {
     pub white_king_position: (usize, usize),
     pub black_king_position: (usize, usize),
@@ -79,7 +79,7 @@ impl Game {
         let mut game_clone = self.clone();
         game_clone.make_move(algebraic_from, algebraic_to, promotion_piece);
         match game_clone.next_to_move {
-            Color::WHITE => {
+            Color::BLACK => {
                 let checking_pieces = can_be_captured_by(
                     Color::BLACK,
                     game_clone.king_position.white_king_position,
@@ -89,7 +89,7 @@ impl Game {
                     return Err(CHECK_ERROR);
                 }
             }
-            Color::BLACK => {
+            Color::WHITE => {
                 let checking_pieces = can_be_captured_by(
                     Color::WHITE,
                     game_clone.king_position.black_king_position,
@@ -188,19 +188,18 @@ impl Game {
             _ => (),
         }
 
-        // Take away castling rights
-        if self.next_to_move == Color::BLACK {
-            self.can_castle.black_can_long_castle = false;
-            self.can_castle.black_can_short_castle = false;
-        } else {
-            self.can_castle.white_can_long_castle = false;
-            self.can_castle.white_can_short_castle = false;
-        }
-
-        // Change king position
+        // Change king position and castling rights
         match self.next_to_move {
-            Color::BLACK => self.king_position.black_king_position = to,
-            Color::WHITE => self.king_position.white_king_position = to,
+            Color::BLACK => {
+                self.king_position.black_king_position = to;
+                self.can_castle.black_can_long_castle = false;
+                self.can_castle.black_can_short_castle = false;
+            }
+            Color::WHITE => {
+                self.king_position.white_king_position = to;
+                self.can_castle.white_can_long_castle = false;
+                self.can_castle.white_can_short_castle = false;
+            }
         }
     }
     fn make_pawn_move(

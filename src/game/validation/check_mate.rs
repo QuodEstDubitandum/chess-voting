@@ -1,6 +1,9 @@
-use crate::game::{
-    chess_piece::{ChessPiece, Color, Piece},
-    Game,
+use crate::{
+    game::{
+        chess_piece::{ChessPiece, Color, Piece},
+        Game,
+    },
+    utils::is_in_bounds,
 };
 
 pub struct CapturePiece {
@@ -44,15 +47,15 @@ fn capturable_by_knight(
     ];
 
     for (row, col) in knight_squares {
-        if row >= 0
-            && row <= 7
-            && col >= 0
-            && col <= 7
-            && game.field[row as usize][col as usize]
-                == Some(ChessPiece {
-                    piece: Piece::KNIGHT,
-                    color: enemy_color,
-                })
+        if !is_in_bounds(row, col) {
+            continue;
+        }
+
+        if game.field[row as usize][col as usize]
+            == Some(ChessPiece {
+                piece: Piece::KNIGHT,
+                color: enemy_color,
+            })
         {
             capturable_by.push(CapturePiece {
                 row: row as usize,
@@ -73,20 +76,16 @@ fn capturable_by_diagonal_move(
     let col = square.1 as i32;
 
     let directions = vec![(1, 1), (1, -1), (-1, 1), (-1, -1)];
-    for dir in directions {
-        'inner: for i in 1..8 {
-            if row + i * dir.0 >= 0
-                && row + i * dir.0 <= 7
-                && col + i * dir.1 >= 0
-                && col + i * dir.1 <= 7
-                && game.field[square.0 + (i * dir.0) as usize][square.1 + (i * dir.1) as usize]
-                    .is_some()
+    'outer: for dir in directions {
+        for i in 1..8 {
+            if !is_in_bounds(row + i * dir.0, col + i * dir.1) {
+                continue 'outer;
+            }
+
+            if let Some(piece) = game.field[(row + i * dir.0) as usize][(col + i * dir.1) as usize]
             {
-                let piece = game.field[square.0 + (i * dir.0) as usize]
-                    [square.1 + (i * dir.1) as usize]
-                    .unwrap();
                 if piece.color != enemy_color {
-                    break 'inner;
+                    continue 'outer;
                 }
 
                 match piece.piece {
@@ -132,7 +131,7 @@ fn capturable_by_diagonal_move(
                     }
                     _ => (),
                 }
-                break 'inner;
+                continue 'outer;
             }
         }
     }
@@ -148,20 +147,16 @@ fn capturable_by_linear_move(
     let col = square.1 as i32;
 
     let directions = vec![(1, 0), (-1, 0), (0, 1), (0, -1)];
-    for dir in directions {
-        'inner: for i in 1..8 {
-            if row + i * dir.0 >= 0
-                && row + i * dir.0 <= 7
-                && col + i * dir.1 >= 0
-                && col + i * dir.1 <= 7
-                && game.field[square.0 + (i * dir.0) as usize][square.1 + (i * dir.1) as usize]
-                    .is_some()
+    'outer: for dir in directions {
+        for i in 1..8 {
+            if !is_in_bounds(row + i * dir.0, col + i * dir.1) {
+                continue 'outer;
+            }
+
+            if let Some(piece) = game.field[(row + i * dir.0) as usize][(col + i * dir.1) as usize]
             {
-                let piece = game.field[square.0 + (i * dir.0) as usize]
-                    [square.1 + (i * dir.1) as usize]
-                    .unwrap();
                 if piece.color != enemy_color {
-                    break 'inner;
+                    continue 'outer;
                 }
 
                 match piece.piece {
@@ -190,7 +185,7 @@ fn capturable_by_linear_move(
                     }
                     _ => (),
                 }
-                break 'inner;
+                continue 'outer;
             }
         }
     }
