@@ -1,15 +1,13 @@
 pub mod chess_piece;
 pub mod validation;
 
-#[cfg(test)]
-pub mod tests;
-
 use crate::game::chess_piece::{ChessPiece, Color, Piece};
 use crate::utils::convert_notation::get_squares_from_notation;
 use crate::utils::error::{NO_PIECE_SELECTED_ERROR, PROMOTION_ERROR};
 use uuid::Uuid;
 
 use self::validation::bishop::validate_bishop_move;
+use self::validation::king::validate_king_move;
 use self::validation::knight::validate_knight_move;
 use self::validation::pawn::validate_pawn_move;
 use self::validation::queen::validate_queen_move;
@@ -51,7 +49,7 @@ impl Game {
                 Piece::QUEEN => validate_queen_move(from, to, &self),
                 Piece::KNIGHT => validate_knight_move(from, to, &self),
                 Piece::PAWN => validate_pawn_move(from, to, promotion_piece, &self),
-                _ => Ok(()),
+                Piece::KING => validate_king_move(from, to, &self),
             },
         }
     }

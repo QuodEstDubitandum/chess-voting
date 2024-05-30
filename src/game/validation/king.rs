@@ -1,5 +1,66 @@
+use crate::{
+    game::{chess_piece::Color, Game},
+    utils::error::{CAPTURE_OWN_PIECE_ERROR, GENERAL_ERROR, INVALID_CASTLE_ERROR},
+};
+
+pub fn validate_king_move(
+    from: (usize, usize),
+    to: (usize, usize),
+    game: &Game,
+) -> Result<(), &'static str> {
+    let row_diff = (from.0 as i32 - to.0 as i32).abs();
+    let col_diff = (from.1 as i32 - to.1 as i32).abs();
+
+    match (row_diff, col_diff) {
+        (1, 0) | (0, 1) | (1, 1) => {
+            if let Some(piece) = game.field[to.0][to.1] {
+                if piece.color == game.next_to_move {
+                    return Err(CAPTURE_OWN_PIECE_ERROR);
+                }
+            }
+        }
+        (0, 2) => match game.next_to_move {
+            Color::WHITE => {
+                if game.can_castle.white_can_long_castle
+                    && game.field[7][1] == None
+                    && game.field[7][2] == None
+                    && game.field[7][3] == None
+                {
+                    return Ok(());
+                }
+                if game.can_castle.white_can_short_castle
+                    && game.field[7][5] == None
+                    && game.field[7][6] == None
+                {
+                    return Ok(());
+                }
+                return Err(INVALID_CASTLE_ERROR);
+            }
+            Color::BLACK => {
+                if game.can_castle.black_can_long_castle
+                    && game.field[0][1] == None
+                    && game.field[0][2] == None
+                    && game.field[0][3] == None
+                {
+                    return Ok(());
+                }
+                if game.can_castle.black_can_short_castle
+                    && game.field[0][5] == None
+                    && game.field[0][6] == None
+                {
+                    return Ok(());
+                }
+                return Err(INVALID_CASTLE_ERROR);
+            }
+        },
+        _ => return Err(GENERAL_ERROR),
+    }
+
+    Ok(())
+}
+
 #[cfg(test)]
-mod test_game {
+mod test_king {
     use crate::{
         game::chess_piece::{Color, Piece},
         game::{CastlingRights, ChessPiece},
