@@ -20,6 +20,7 @@ use self::validation::rook::validate_rook_move;
 #[derive(Clone, Debug)]
 pub struct Game {
     pub id: Uuid,
+    pub game_result: Option<GameResult>,
     pub turn_number: u32,
     pub next_to_move: Color,
     pub previous_move: String,
@@ -43,6 +44,12 @@ pub struct KingPosition {
     pub black_king_position: (usize, usize),
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub enum GameResult {
+    WhiteWon,
+    BlackWon,
+}
+
 impl Game {
     pub fn new() -> Game {
         create_new_game()
@@ -53,7 +60,6 @@ impl Game {
         algebraic_to: &str,
         promotion_ch: char,
     ) -> Result<(), &'static str> {
-        let promotion_piece = get_promotion_piece(promotion_ch);
         self.validate_move(algebraic_from, algebraic_to, promotion_ch)?;
         self.make_move(algebraic_from, algebraic_to, promotion_ch);
 
@@ -236,6 +242,7 @@ impl Game {
 fn create_new_game() -> Game {
     Game {
         id: Uuid::new_v4(),
+        game_result: None,
         turn_number: 0,
         previous_move: "".to_string(),
         next_to_move: Color::WHITE,

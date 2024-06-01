@@ -1,4 +1,4 @@
-use crate::game::Game;
+use crate::game::{Game, GameResult};
 
 #[test]
 fn ivanchuk_vs_yusupov() {
@@ -237,4 +237,166 @@ fn ivanchuk_vs_yusupov() {
 
     game.validate_and_make_move("b8", "g3", ' ').expect("Qg3");
     assert_eq!(game.previous_move, "Qg3");
+}
+
+#[test]
+fn hammer_vs_carlsen() {
+    let mut game = Game::new();
+
+    game.validate_and_make_move("e2", "e4", ' ').expect("e4");
+    assert_eq!(game.previous_move, "e4");
+
+    game.validate_and_make_move("g7", "g6", ' ').expect("g6");
+    assert_eq!(game.previous_move, "g6");
+
+    game.validate_and_make_move("d2", "d4", ' ').expect("d4");
+    assert_eq!(game.previous_move, "d4");
+
+    game.validate_and_make_move("e7", "e6", ' ').expect("e6");
+    assert_eq!(game.previous_move, "e6");
+
+    game.validate_and_make_move("g1", "f3", ' ').expect("Nf3");
+    assert_eq!(game.previous_move, "Nf3");
+
+    game.validate_and_make_move("g8", "e7", ' ').expect("Ne7");
+    assert_eq!(game.previous_move, "Ne7");
+
+    game.validate_and_make_move("h2", "h4", ' ').expect("h4");
+    assert_eq!(game.previous_move, "h4");
+
+    game.validate_and_make_move("h7", "h6", ' ').expect("h6");
+    assert_eq!(game.previous_move, "h6");
+
+    game.validate_and_make_move("c1", "f4", ' ').expect("Bf4");
+    assert_eq!(game.previous_move, "Bf4");
+
+    game.validate_and_make_move("f8", "g7", ' ').expect("Bg7");
+    assert_eq!(game.previous_move, "Bg7");
+
+    game.validate_and_make_move("d1", "d2", ' ').expect("Qd2");
+    assert_eq!(game.previous_move, "Qd2");
+
+    game.validate_and_make_move("d7", "d5", ' ').expect("d5");
+    assert_eq!(game.previous_move, "d5");
+
+    game.validate_and_make_move("e4", "e5", ' ').expect("e5");
+    assert_eq!(game.previous_move, "e5");
+
+    game.validate_and_make_move("c7", "c5", ' ').expect("c5");
+    assert_eq!(game.previous_move, "c5");
+
+    game.validate_and_make_move("c2", "c3", ' ').expect("c3");
+    assert_eq!(game.previous_move, "c3");
+
+    game.validate_and_make_move("b8", "c6", ' ').expect("Nc6");
+    assert_eq!(game.previous_move, "Nc6");
+
+    game.validate_and_make_move("b1", "a3", ' ').expect("Na3");
+    assert_eq!(game.previous_move, "Na3");
+
+    game.validate_and_make_move("e8", "f8", ' ').expect("Kf8");
+    assert_eq!(game.previous_move, "Kf8");
+    assert_eq!(game.can_castle.black_can_long_castle, false);
+    assert_eq!(game.can_castle.white_can_long_castle, true);
+
+    game.validate_and_make_move("d4", "c5", ' ').expect("xc5");
+    assert_eq!(game.previous_move, "xc5");
+
+    game.validate_and_make_move("b7", "b6", ' ').expect("b6");
+    assert_eq!(game.previous_move, "b6");
+
+    game.validate_and_make_move("c5", "b6", ' ').expect("xb6");
+    assert_eq!(game.previous_move, "xb6");
+
+    game.validate_and_make_move("d8", "b6", ' ').expect("Qxb6");
+    assert_eq!(game.previous_move, "Qxb6");
+
+    game.validate_and_make_move("f1", "d3", ' ').expect("Bd3");
+    assert_eq!(game.previous_move, "Bd3");
+
+    game.validate_and_make_move("c8", "a6", ' ').expect("Ba6");
+    assert_eq!(game.previous_move, "Ba6");
+
+    game.validate_and_make_move("b2", "b4", ' ').expect("b4");
+    assert_eq!(game.previous_move, "b4");
+
+    game.validate_and_make_move("d5", "d4", ' ').expect("d4");
+    assert_eq!(game.previous_move, "d4");
+
+    game.validate_and_make_move("b4", "b5", ' ').expect("b5");
+    assert_eq!(game.previous_move, "b5");
+
+    game.validate_and_make_move("d4", "c3", ' ').expect("xc3");
+    assert_eq!(game.previous_move, "xc3");
+
+    game.validate_and_make_move("d2", "e3", ' ').expect("Qe3");
+    assert_eq!(game.previous_move, "Qe3");
+
+    game.validate_and_make_move("e7", "d5", ' ').expect("Nd5");
+    assert_eq!(game.previous_move, "Nd5");
+
+    game.validate_and_make_move("e3", "b6", ' ').expect("Qxb6");
+    assert_eq!(game.previous_move, "Qxb6");
+
+    game.validate_and_make_move("a7", "b6", ' ').expect("xb6");
+    assert_eq!(game.previous_move, "xb6");
+
+    game.validate_and_make_move("b5", "a6", ' ').expect("xa6");
+    assert_eq!(game.previous_move, "xa6");
+
+    game.validate_and_make_move("d5", "f4", ' ').expect("Nxf4");
+    assert_eq!(game.previous_move, "Nxf4");
+
+    game.validate_and_make_move("d3", "e4", ' ').expect("Be4");
+    assert_eq!(game.previous_move, "Be4");
+
+    game.validate_and_make_move("a8", "a6", ' ').expect("Rxa6");
+    assert_eq!(game.previous_move, "Rxa6");
+
+    game.validate_and_make_move("e4", "c6", ' ').expect("Bxc6");
+    assert_eq!(game.previous_move, "Bxc6");
+
+    game.validate_and_make_move("a6", "a3", ' ').expect("Rxa3");
+    assert_eq!(game.previous_move, "Rxa3");
+
+    game.validate_and_make_move("e1", "c1", ' ').expect("0-0-0");
+    assert_eq!(game.previous_move, "0-0-0");
+
+    game.validate_and_make_move("f8", "g8", ' ').expect("Kg8");
+    assert_eq!(game.previous_move, "Kg8");
+
+    game.validate_and_make_move("d1", "d8", ' ').expect("Rd8+");
+    assert_eq!(game.previous_move, "Rd8+");
+
+    game.validate_and_make_move("g8", "h7", ' ').expect("Kh7");
+    assert_eq!(game.previous_move, "Kh7");
+
+    game.validate_and_make_move("f3", "g5", ' ').expect("Ng5+");
+    assert_eq!(game.previous_move, "Ng5+");
+
+    game.validate_and_make_move("h6", "g5", ' ').expect("xg5");
+    assert_eq!(game.previous_move, "xg5");
+
+    game.validate_and_make_move("h4", "g5", ' ').expect("xg5+");
+    assert_eq!(game.previous_move, "xg5+");
+
+    game.validate_and_make_move("f4", "h5", ' ').expect("Nh5");
+    assert_eq!(game.previous_move, "Nh5");
+
+    game.validate_and_make_move("h1", "h5", ' ').expect("Rxh5+");
+    assert_eq!(game.previous_move, "Rxh5+");
+
+    game.validate_and_make_move("g6", "h5", ' ').expect("xh5");
+    assert_eq!(game.previous_move, "xh5");
+
+    game.validate_and_make_move("c6", "e4", ' ').expect("Be4+");
+    assert_eq!(game.previous_move, "Be4+");
+
+    game.validate_and_make_move("f7", "f5", ' ').expect("f5");
+    assert_eq!(game.previous_move, "f5");
+
+    game.validate_and_make_move("e5", "f6", ' ').expect("xf6+");
+    assert_eq!(game.previous_move, "xf6+");
+
+    assert_eq!(game.game_result, Some(GameResult::WhiteWon));
 }

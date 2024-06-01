@@ -12,6 +12,10 @@ pub struct CapturePiece {
     pub piece: Piece,
 }
 
+pub fn is_mate(game: &Game) -> bool {
+    false
+}
+
 pub fn can_king_be_captured_after_move(
     game: &Game,
     algebraic_from: &str,
