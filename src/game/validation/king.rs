@@ -3,6 +3,8 @@ use crate::{
     utils::error::{CAPTURE_OWN_PIECE_ERROR, GENERAL_ERROR, INVALID_CASTLE_ERROR},
 };
 
+use super::check_mate::can_be_captured_by;
+
 pub fn validate_king_move(
     from: (usize, usize),
     to: (usize, usize),
@@ -25,6 +27,9 @@ pub fn validate_king_move(
                     && game.field[7][1] == None
                     && game.field[7][2] == None
                     && game.field[7][3] == None
+                    && can_be_captured_by(Color::BLACK, (7, 2), game).len() == 0
+                    && can_be_captured_by(Color::BLACK, (7, 3), game).len() == 0
+                    && can_be_captured_by(Color::BLACK, (7, 4), game).len() == 0
                 {
                     return Ok(());
                 }
@@ -41,6 +46,9 @@ pub fn validate_king_move(
                     && game.field[0][1] == None
                     && game.field[0][2] == None
                     && game.field[0][3] == None
+                    && can_be_captured_by(Color::WHITE, (0, 2), game).len() == 0
+                    && can_be_captured_by(Color::WHITE, (0, 3), game).len() == 0
+                    && can_be_captured_by(Color::WHITE, (0, 4), game).len() == 0
                 {
                     return Ok(());
                 }
@@ -74,7 +82,7 @@ mod test_king {
         game.field[7][3] = None;
         game.field[7][2] = None;
         game.field[7][1] = None;
-        let val = game.validate_and_make_move("e1", "c1", None);
+        let val = game.validate_and_make_move("e1", "c1", ' ');
         if let Err(e) = val {
             panic!("Expected castle move to be performed, got {:?}", e);
         }
@@ -101,7 +109,7 @@ mod test_king {
     fn test_castle_move_with_piece_in_the_way() {
         let mut game = Game::new();
         game.field[7][5] = None;
-        let val = game.validate_and_make_move("e1", "g1", None);
+        let val = game.validate_and_make_move("e1", "g1", ' ');
         if val.is_ok() {
             panic!("Expected castle move to fail due to a piece being in the way");
         }
@@ -113,7 +121,7 @@ mod test_king {
         game.field[0][5] = None;
         game.field[0][6] = None;
         game.field[0][7] = None;
-        let val = game.validate_and_make_move("e8", "g8", None);
+        let val = game.validate_and_make_move("e8", "g8", ' ');
         if val.is_ok() {
             panic!("Expected castle move to fail due to pieces being on the wrong position");
         }
@@ -130,9 +138,23 @@ mod test_king {
         };
         game.field[0][5] = None;
         game.field[0][6] = None;
-        let val = game.validate_and_make_move("e8", "g8", None);
+        let val = game.validate_and_make_move("e8", "g8", ' ');
         if val.is_ok() {
             panic!("Expected castle move to fail due to pieces having already moved before");
+        }
+    }
+
+    #[test]
+    fn test_castle_move_through_check() {
+        let mut game = Game::new();
+        game.field[7][3] = None;
+        game.field[7][2] = None;
+        game.field[7][1] = None;
+        game.field[6][3] = None;
+        game.field[1][3] = None;
+        let val = game.validate_and_make_move("e1", "c1", ' ');
+        if val.is_ok() {
+            panic!("Expected castle move to fail due to castling through check");
         }
     }
 }

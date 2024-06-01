@@ -12,16 +12,38 @@ pub struct CapturePiece {
     pub piece: Piece,
 }
 
+pub fn can_king_be_captured_after_move(
+    game: &Game,
+    algebraic_from: &str,
+    algebraic_to: &str,
+    promotion_ch: char,
+) -> Vec<CapturePiece> {
+    let mut game_clone = game.clone();
+    game_clone.make_move(algebraic_from, algebraic_to, promotion_ch);
+    match game_clone.next_to_move {
+        Color::BLACK => can_be_captured_by(
+            Color::BLACK,
+            game_clone.king_position.white_king_position,
+            &game_clone,
+        ),
+        Color::WHITE => can_be_captured_by(
+            Color::WHITE,
+            game_clone.king_position.black_king_position,
+            &game_clone,
+        ),
+    }
+}
+
 pub fn can_be_captured_by(
     enemy_color: Color,
     square: (usize, usize),
-    game: Game,
+    game: &Game,
 ) -> Vec<CapturePiece> {
     let mut capturable_by = vec![];
 
-    capturable_by_knight(enemy_color, square, &game, &mut capturable_by);
-    capturable_by_diagonal_move(enemy_color, square, &game, &mut capturable_by);
-    capturable_by_linear_move(enemy_color, square, &game, &mut capturable_by);
+    capturable_by_knight(enemy_color, square, game, &mut capturable_by);
+    capturable_by_diagonal_move(enemy_color, square, game, &mut capturable_by);
+    capturable_by_linear_move(enemy_color, square, game, &mut capturable_by);
 
     capturable_by
 }

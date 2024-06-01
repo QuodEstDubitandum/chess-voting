@@ -38,7 +38,7 @@ mod test_knight {
     #[test]
     fn test_knight_move() {
         let mut game = Game::new();
-        let val = game.validate_and_make_move("b1", "c3", None);
+        let val = game.validate_and_make_move("b1", "c3", ' ');
         if let Err(e) = val {
             panic!("Expected knight move to be performed, got {:?}", e);
         }
@@ -63,7 +63,7 @@ mod test_knight {
             piece: Piece::ROOK,
             color: Color::BLACK,
         });
-        let val = game.validate_and_make_move("b1", "d2", None);
+        let val = game.validate_and_make_move("b1", "d2", ' ');
         if let Err(e) = val {
             panic!("Expected knight move to be performed, got {:?}", e);
         }
@@ -84,7 +84,7 @@ mod test_knight {
     #[test]
     fn test_knight_move_with_wrong_capture() {
         let mut game = Game::new();
-        let val = game.validate_and_make_move("b1", "d2", None);
+        let val = game.validate_and_make_move("b1", "d2", ' ');
         if val.is_ok() {
             panic!("Expected knight move to fail due to your own piece being captured");
         }

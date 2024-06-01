@@ -55,7 +55,7 @@ mod test_rook {
     fn test_rook_move() {
         let mut game = Game::new();
         game.field[6][0] = None;
-        let val = game.validate_and_make_move("a1", "a5", None);
+        let val = game.validate_and_make_move("a1", "a5", ' ');
         if let Err(e) = val {
             panic!("Expected rook move to be performed, got {:?}", e);
         }
@@ -83,7 +83,7 @@ mod test_rook {
             color: Color::WHITE,
         });
         game.next_to_move = Color::BLACK;
-        let val = game.validate_and_make_move("a8", "a3", None);
+        let val = game.validate_and_make_move("a8", "a3", ' ');
         if let Err(e) = val {
             panic!("Expected rook move to be performed, got {:?}", e);
         }
@@ -111,7 +111,7 @@ mod test_rook {
             piece: Piece::PAWN,
             color: Color::WHITE,
         });
-        let val = game.validate_and_make_move("a1", "a5", None);
+        let val = game.validate_and_make_move("a1", "a5", ' ');
         if val.is_ok() {
             panic!("Expected rook move to fail due to your own piece being captured");
         }
@@ -120,7 +120,7 @@ mod test_rook {
     #[test]
     fn test_rook_move_with_piece_in_the_way() {
         let mut game = Game::new();
-        let val = game.validate_and_make_move("a1", "a5", None);
+        let val = game.validate_and_make_move("a1", "a5", ' ');
         if val.is_ok() {
             panic!("Expected rook move to fail due to a piece being in the way");
         }

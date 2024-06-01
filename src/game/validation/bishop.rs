@@ -12,7 +12,7 @@ pub fn validate_bishop_move(
     let col_diff = from.1 as i32 - to.1 as i32;
 
     // not even diagonal move
-    if row_diff != col_diff || row_diff == 0 {
+    if (row_diff).abs() != (col_diff).abs() || row_diff == 0 {
         return Err(GENERAL_ERROR);
     }
 
@@ -50,7 +50,7 @@ mod test_bishop {
     fn test_bishop_move() {
         let mut game = Game::new();
         game.field[6][4] = None;
-        let val = game.validate_and_make_move("f1", "b5", None);
+        let val = game.validate_and_make_move("f1", "b5", ' ');
         if let Err(e) = val {
             panic!("Expected bishop move to be performed, got {:?}", e);
         }
@@ -76,7 +76,7 @@ mod test_bishop {
             piece: Piece::PAWN,
             color: Color::BLACK,
         });
-        let val = game.validate_and_make_move("f1", "b5", None);
+        let val = game.validate_and_make_move("f1", "b5", ' ');
         if let Err(e) = val {
             panic!("Expected bishop move to be performed, got {:?}", e);
         }
@@ -102,7 +102,7 @@ mod test_bishop {
             piece: Piece::PAWN,
             color: Color::WHITE,
         });
-        let val = game.validate_and_make_move("f1", "b5", None);
+        let val = game.validate_and_make_move("f1", "b5", ' ');
         if val.is_ok() {
             panic!("Expected bishop move to fail due to your own piece being captured");
         }
@@ -111,7 +111,7 @@ mod test_bishop {
     #[test]
     fn test_bishop_move_with_piece_in_the_way() {
         let mut game = Game::new();
-        let val = game.validate_and_make_move("f1", "b5", None);
+        let val = game.validate_and_make_move("f1", "b5", ' ');
         if val.is_ok() {
             panic!("Expected bishop move to fail due to a piece being in the way");
         }

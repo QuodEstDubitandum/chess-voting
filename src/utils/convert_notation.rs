@@ -2,7 +2,11 @@ use std::{collections::HashMap, sync::Mutex};
 
 use once_cell::sync::Lazy;
 
-use super::error::{INVALID_FROM_FIELD, INVALID_TO_FIELD, SQUARE_OUT_OF_BOUNDS_ERROR};
+use crate::game::chess_piece::Piece;
+
+use super::error::{
+    INVALID_FROM_FIELD, INVALID_TO_FIELD, PROMOTION_ERROR, SQUARE_OUT_OF_BOUNDS_ERROR,
+};
 
 pub fn get_squares_from_notation(
     from: &str,
@@ -47,6 +51,11 @@ pub fn get_notation_from_square(square: (usize, usize)) -> Result<String, &'stat
     Ok(notation)
 }
 
+pub fn get_promotion_piece(promotion_ch: char) -> Option<Piece> {
+    let promotion_mapping = PROMOTION_MAP.lock().unwrap();
+    promotion_mapping.get(&promotion_ch).copied()
+}
+
 static NOTATION_TO_SQUARE_MAP: Lazy<Mutex<HashMap<char, usize>>> = Lazy::new(|| {
     let mut map = HashMap::new();
     map.insert('a', 0);
@@ -70,5 +79,14 @@ static SQUARE_TO_NOTATION_MAP: Lazy<Mutex<HashMap<usize, char>>> = Lazy::new(|| 
     map.insert(5, 'f');
     map.insert(6, 'g');
     map.insert(7, 'h');
+    Mutex::new(map)
+});
+
+static PROMOTION_MAP: Lazy<Mutex<HashMap<char, Piece>>> = Lazy::new(|| {
+    let mut map = HashMap::new();
+    map.insert('Q', Piece::QUEEN);
+    map.insert('R', Piece::ROOK);
+    map.insert('B', Piece::BISHOP);
+    map.insert('N', Piece::KNIGHT);
     Mutex::new(map)
 });
