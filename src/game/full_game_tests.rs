@@ -395,6 +395,8 @@ fn hammer_vs_carlsen() {
     game.validate_and_make_move("f7", "f5", ' ').expect("f5");
     assert_eq!(game.previous_move, "f5");
 
+    assert_eq!(game.game_result, None);
+
     game.validate_and_make_move("e5", "f6", ' ').expect("xf6+");
     assert_eq!(game.previous_move, "xf6+");
 

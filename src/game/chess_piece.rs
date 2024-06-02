@@ -1,3 +1,5 @@
+use serde::Deserialize;
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ChessPiece {
     pub piece: Piece,
@@ -14,7 +16,7 @@ pub enum Piece {
     PAWN,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Deserialize, Debug, Copy, Clone, PartialEq)]
 pub enum Color {
     BLACK,
     WHITE,
