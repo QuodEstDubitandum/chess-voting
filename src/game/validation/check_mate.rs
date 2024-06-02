@@ -74,6 +74,7 @@ pub fn is_mate(game: &Game) -> bool {
         let algebraic_to =
             get_notation_from_square((threatening_pieces[0].row, threatening_pieces[0].col))
                 .unwrap();
+        println!("{:?} {:?}", algebraic_from, algebraic_to);
         if can_king_be_captured_after_move(game, &algebraic_from, &algebraic_to, 'Q').len() == 0 {
             return false;
         };
@@ -174,8 +175,10 @@ fn capturable_by_diagonal_move(
                 continue 'outer;
             }
 
-            if let Some(piece) = game.field[(row + i * dir.0) as usize][(col + i * dir.1) as usize]
-            {
+            let row = (row + i * dir.0) as usize;
+            let col = (col + i * dir.1) as usize;
+
+            if let Some(piece) = game.field[row][col] {
                 if piece.color != enemy_color {
                     continue 'outer;
                 }
@@ -183,15 +186,15 @@ fn capturable_by_diagonal_move(
                 match piece.piece {
                     Piece::QUEEN => {
                         capturable_by.push(CapturePiece {
-                            row: row as usize,
-                            col: col as usize,
+                            row,
+                            col,
                             piece: Piece::QUEEN,
                         });
                     }
                     Piece::BISHOP => {
                         capturable_by.push(CapturePiece {
-                            row: row as usize,
-                            col: col as usize,
+                            row,
+                            col,
                             piece: Piece::BISHOP,
                         });
                     }
@@ -203,8 +206,8 @@ fn capturable_by_diagonal_move(
                                 | (1, 1, Color::WHITE)
                                 | (1, -1, Color::WHITE) => {
                                     capturable_by.push(CapturePiece {
-                                        row: row as usize,
-                                        col: col as usize,
+                                        row,
+                                        col,
                                         piece: Piece::PAWN,
                                     });
                                 }
@@ -215,8 +218,8 @@ fn capturable_by_diagonal_move(
                     Piece::KING => {
                         if i == 1 {
                             capturable_by.push(CapturePiece {
-                                row: row as usize,
-                                col: col as usize,
+                                row,
+                                col,
                                 piece: Piece::KING,
                             });
                         }
@@ -245,8 +248,10 @@ fn capturable_by_linear_move(
                 continue 'outer;
             }
 
-            if let Some(piece) = game.field[(row + i * dir.0) as usize][(col + i * dir.1) as usize]
-            {
+            let row = (row + i * dir.0) as usize;
+            let col = (col + i * dir.1) as usize;
+
+            if let Some(piece) = game.field[row][col] {
                 if piece.color != enemy_color {
                     continue 'outer;
                 }
@@ -254,23 +259,23 @@ fn capturable_by_linear_move(
                 match piece.piece {
                     Piece::QUEEN => {
                         capturable_by.push(CapturePiece {
-                            row: row as usize,
-                            col: col as usize,
+                            row,
+                            col,
                             piece: Piece::QUEEN,
                         });
                     }
                     Piece::ROOK => {
                         capturable_by.push(CapturePiece {
-                            row: row as usize,
-                            col: col as usize,
+                            row,
+                            col,
                             piece: Piece::ROOK,
                         });
                     }
                     Piece::KING => {
                         if i == 1 {
                             capturable_by.push(CapturePiece {
-                                row: row as usize,
-                                col: col as usize,
+                                row,
+                                col,
                                 piece: Piece::KING,
                             });
                         }
