@@ -3,7 +3,7 @@ use crate::{
         chess_piece::{ChessPiece, Color, Piece},
         Game,
     },
-    utils::is_in_bounds,
+    utils::{convert_notation::get_notation_from_square, is_in_bounds},
 };
 
 pub struct CapturePiece {
@@ -13,7 +13,73 @@ pub struct CapturePiece {
 }
 
 pub fn is_mate(game: &Game) -> bool {
-    false
+    let enemy_color: Color;
+    let king_position: (usize, usize);
+
+    match game.next_to_move {
+        Color::WHITE => {
+            enemy_color = Color::BLACK;
+            king_position = game.king_position.white_king_position;
+        }
+        Color::BLACK => {
+            enemy_color = Color::WHITE;
+            king_position = game.king_position.black_king_position;
+        }
+    }
+
+    let threatening_pieces = can_be_captured_by(enemy_color, king_position, game);
+    if threatening_pieces.len() == 0 {
+        return false;
+    }
+
+    let king_row = king_position.0 as i32;
+    let king_col = king_position.1 as i32;
+
+    //Check all surrounding pieces
+    let surrounding_squares: Vec<(i32, i32)> = vec![
+        (king_row + 1, king_col - 1),
+        (king_row + 1, king_col),
+        (king_row + 1, king_col + 1),
+        (king_row, king_col - 1),
+        (king_row, king_col + 1),
+        (king_row - 1, king_col - 1),
+        (king_row - 1, king_col),
+        (king_row - 1, king_col + 1),
+    ];
+    for surr_sq in surrounding_squares {
+        if is_in_bounds(surr_sq.0, surr_sq.1)
+            && can_be_captured_by(enemy_color, (surr_sq.0 as usize, surr_sq.1 as usize), game).len()
+                == 0
+        {
+            return false;
+        }
+    }
+
+    // if there are more than 2 pieces threatening the king and he cannot move to another
+    // square, its mate
+    if threatening_pieces.len() > 1 {
+        return true;
+    }
+
+    // else we need to check if this one threatening piece can be captured to avoid mate
+    let saving_pieces = can_be_captured_by(
+        game.next_to_move,
+        (threatening_pieces[0].row, threatening_pieces[0].col),
+        game,
+    );
+
+    // and then check if after the "saving move" the king is still in check
+    for piece in saving_pieces {
+        let algebraic_from = get_notation_from_square((piece.row, piece.col)).unwrap();
+        let algebraic_to =
+            get_notation_from_square((threatening_pieces[0].row, threatening_pieces[0].col))
+                .unwrap();
+        if can_king_be_captured_after_move(game, &algebraic_from, &algebraic_to, 'Q').len() == 0 {
+            return false;
+        };
+    }
+
+    true
 }
 
 pub fn can_king_be_captured_after_move(

@@ -39,6 +39,7 @@ pub fn get_squares_from_notation(
 pub fn get_notation_from_square(square: (usize, usize)) -> Result<String, &'static str> {
     let notation_mapping = SQUARE_TO_NOTATION_MAP.lock().unwrap();
     let mut notation: String = "".to_string();
+
     // column
     notation.push(
         *notation_mapping

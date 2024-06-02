@@ -10,7 +10,7 @@ use crate::utils::error::{CHECK_ERROR, NO_PIECE_SELECTED_ERROR};
 use uuid::Uuid;
 
 use self::validation::bishop::validate_bishop_move;
-use self::validation::check_mate::{can_be_captured_by, can_king_be_captured_after_move};
+use self::validation::check_mate::{can_be_captured_by, can_king_be_captured_after_move, is_mate};
 use self::validation::king::validate_king_move;
 use self::validation::knight::validate_knight_move;
 use self::validation::pawn::validate_pawn_move;
@@ -154,6 +154,17 @@ impl Game {
                     self.previous_move.push('+');
                 }
                 self.turn_number += 1;
+            }
+        }
+
+        if is_mate(self) {
+            match self.next_to_move {
+                Color::WHITE => {
+                    self.game_result = Some(GameResult::BlackWon);
+                }
+                Color::BLACK => {
+                    self.game_result = Some(GameResult::WhiteWon);
+                }
             }
         }
     }
