@@ -1,8 +1,5 @@
 use libsql::{de, params, Builder, Connection, Rows};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-
-use crate::game::chess_piece::Color;
 
 pub async fn connect_db() -> Connection {
     let db = Builder::new_local("local.db")
@@ -32,6 +29,12 @@ pub async fn seed_db(db: &Connection) {
     player VARCHAR(10),
     move_notation VARCHAR(10),
     FOREIGN KEY(game_id) REFERENCES Game(game_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS Vote(
+    vote_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    move_notation VARCHAR(10) UNIQUE,
+    votes INTEGER
     );
     "#,
     )
@@ -101,5 +104,15 @@ impl DB {
         println!("{:?}", moves);
 
         moves
+    }
+    pub async fn vote(&self, new_move: &str) {
+        self.conn
+            .execute(
+                "INSERT INTO Vote(move_notation, votes) VALUES(?1, 1) 
+                 ON CONFLICT(move_notation) DO UPDATE SET votes = Vote.votes + 1",
+                params![new_move],
+            )
+            .await
+            .expect("Could not vote for a move");
     }
 }
