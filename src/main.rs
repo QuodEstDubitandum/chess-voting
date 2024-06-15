@@ -2,7 +2,7 @@ use std::{env, sync::Mutex};
 
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, Result};
 use chess_voting::{
-    db::{Move, DB},
+    db::{Move, Vote, DB},
     game::{chess_piece::Color, Game, GameResult},
     utils::{
         request::{FinishRequest, MoveRequest},
@@ -38,10 +38,13 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(server.clone())
             .service(health)
-            .service(make_move)
             .service(get_game_history)
-            .service(finish_game)
             .service(get_game_state)
+            .service(get_votes)
+            .service(finish_game)
+            .service(validate_move)
+            .service(make_vote)
+            .service(make_move)
     })
     .bind((url, port.parse::<u16>().unwrap()))?
     .run()
@@ -71,6 +74,14 @@ async fn get_game_state(server: web::Data<Server>) -> Result<impl Responder> {
     Ok(web::Json(state))
 }
 
+#[get("/game/current_votes")]
+async fn get_votes(server: web::Data<Server>) -> Result<impl Responder> {
+    info!("Checking game votes...");
+    let votes: Vec<Vote> = server.db.get_votes().await;
+    info!("Fetched game moves");
+    Ok(web::Json(votes))
+}
+
 #[post("/game/finish")]
 async fn finish_game(req: web::Json<FinishRequest>, server: web::Data<Server>) -> HttpResponse {
     info!("Finishing game...");
@@ -83,15 +94,22 @@ async fn finish_game(req: web::Json<FinishRequest>, server: web::Data<Server>) -
     HttpResponse::Ok().body("OK".to_string())
 }
 
-#[post("/game/vote")]
-async fn make_vote(req: web::Json<MoveRequest>, server: web::Data<Server>) -> HttpResponse {
-    info!("Voting for a move...");
+#[post("/game/validate")]
+async fn validate_move(req: web::Json<MoveRequest>, server: web::Data<Server>) -> HttpResponse {
+    info!("Validating move...");
     let game = server.game.lock().unwrap();
     if let Err(e) = game.validate_move(&req.from, &req.to, req.promotion) {
         error!("Not a valid move: {}", e);
         return HttpResponse::BadRequest().body(e);
     }
     info!("Move is valid");
+    HttpResponse::Ok().body("OK".to_string())
+}
+
+#[post("/game/vote")]
+async fn make_vote(req: web::Json<MoveRequest>, server: web::Data<Server>) -> HttpResponse {
+    info!("Voting for a move...");
+    let game = server.game.lock().unwrap();
 
     // kinda hacky to create new game just to get the move notation, wouldve been better to just
     // create a get_notation method but it would have been quite annoying to factor in all the

@@ -53,6 +53,12 @@ pub struct Move {
     pub player: String,
 }
 
+#[derive(Deserialize, Serialize, Debug)]
+pub struct Vote {
+    pub move_notation: String,
+    pub votes: u32,
+}
+
 impl DB {
     pub async fn new() -> DB {
         let conn = connect_db().await;
@@ -101,8 +107,6 @@ impl DB {
             moves.push(de::from_row::<Move>(&row).unwrap());
         }
 
-        println!("{:?}", moves);
-
         moves
     }
     pub async fn vote(&self, new_move: &str) {
@@ -114,5 +118,19 @@ impl DB {
             )
             .await
             .expect("Could not vote for a move");
+    }
+    pub async fn get_votes(&self) -> Vec<Vote> {
+        let mut rows: Rows = self
+            .conn
+            .query("SELECT move_notation, votes FROM Vote", ())
+            .await
+            .expect("Could not get votes");
+
+        let mut votes: Vec<Vote> = vec![];
+        while let Some(row) = rows.next().await.unwrap() {
+            votes.push(de::from_row::<Vote>(&row).unwrap());
+        }
+
+        votes
     }
 }
